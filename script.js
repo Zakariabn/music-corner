@@ -1,17 +1,48 @@
 const elementById = (id) => {
-  document.getElementById(id);
+  return document.getElementById(id);
 };
+
+const shortcutKeyForUser = () => {
+  const searchInput = elementById('keyword');
+  const searchBtn = elementById('search');
+
+  searchInput.addEventListener ('keypress', (e) => {
+    if (e.key == 'Enter') {
+      searchBtn.click();
+    }
+  })
+}
+shortcutKeyForUser();
 
 const handleSearch = () => {
   const keyword = elementById("keyword");
+  // console.log(keyword);
   const url = `https://theaudiodb.com/api/v1/json/2/search.php?s=${keyword.value}`;
   fetch(url)
     .then((res) => res.json())
-    .then((data) => showArtists(data));
+    .then((data) => {
+      // validation for artists
+      const artists = data.artists;
+      if (!artists) {
+        keyword.setAttribute('placeholder', `Artist ${keyword.value} not found`);
+      }
+      else {
+        keyword.removeAttribute('placeholder');
+        // sending artists data.
+        showArtists(data);
+      }
+    });
+  keyword.value = '';
 };
 
 const showArtists = (data) => {
-  const artistContainer = elementById("artist");
+  const artistContainer = elementById("artists");
+  artistContainer.textContent = '';
+
+  // hear clearing previous artist albums
+  const albumContainer = elementById('albums');
+  albumContainer.textContent = '';
+
   data?.artists?.forEach((artist) => {
     const div = document.createElement("div");
     div.classList.add("artist-card");
@@ -37,28 +68,32 @@ const showArtists = (data) => {
 };
 
 const fetchAlbums = (id) => {
-  const url = `theaudiodb.com/api/v1/json/2/album.php?i=${id}`;
+  const url = `https://theaudiodb.com/api/v1/json/2/album.php?i=${id}`;
   fetch(url)
-    .then((res) => res.JSON())
-    .then((data) => showAlbum(data));
+    .then(res => res.json())
+    .then(data => showAlbum(data));
   const artistContainer = elementById("artists");
   artistContainer.innerHTML = "";
 };
 
-const showAlbum = (data) => {
+const showAlbum = ({album}) => {
   const albumContainer = elementById("albums");
+  albumContainer.textContent = '';
+  
   album.forEach((item) => {
     const div = document.createElement("div");
     div.classList.add("album");
+    const imagePlaceholderUrl = 'https://recordsale.de/assets/record_placeholder-f6f9c8ec7c95af894337c529945c4f77cfbe802ee073e672cd264c1186ad0238.svg'
+
     div.innerHTML = `
         <div class="album-image-container">
           <img
-            src="${album.strAlbumThumb}"
+            src="${item.strAlbumThumb ? item.strAlbumThumb : imagePlaceholderUrl }"
             alt=""
           />
         </div>
         <div class="album-name">
-          <h3>${album.strAlbum}</h3>
+          <h3>${item.strAlbum}</h3>
         </div>
       `;
 

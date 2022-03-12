@@ -190,7 +190,7 @@ header h1 {
 .albums-container {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 40px 0;
+  gap: 40px .5rem;
 }
 
 .album {
